@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Garexcell Account</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: #f2f2f7; color: #1c1c1e; display: flex; flex-direction: column; min-height: 100vh; -webkit-font-smoothing: antialiased; padding-top: 60px; padding-bottom: 90px; }
+        
+        /* Top App Bar */
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .brand-logo { font-size: 20px; font-weight: 800; color: #000; text-decoration: none; letter-spacing: -0.5px; }
+        .signout-btn { background: #ffe5e5; color: #ff3b30; border: none; padding: 6px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        
+        /* Bottom Navigation */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: flex; justify-content: space-around; padding: 12px 10px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(0,0,0,0.1); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 11px; font-weight: 500; text-decoration: none; cursor: pointer; transition: color 0.2s; width: 25%; }
+        .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; fill: currentColor; }
+        .nav-item.active { color: #007aff; }
+
+        /* Main Content Container */
+        .content { flex: 1; max-width: 600px; width: 100%; margin: 0 auto; padding: 20px; }
+        .tab-content { display: none; animation: fadeIn 0.2s ease-out; }
+        .tab-content.active { display: block; }
+        
+        .page-title { font-size: 28px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
+        .page-subtitle { font-size: 15px; color: #8e8e93; margin-bottom: 24px; line-height: 1.4; }
+        
+        /* Native Grouped Lists */
+        .list-header { font-size: 13px; text-transform: uppercase; color: #6d6d72; font-weight: 500; margin: 0 0 8px 16px; letter-spacing: 0.5px; }
+        .list-group { background: #ffffff; border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: background 0.15s; }
+        .list-item:active { background: #f2f2f7; }
+        .list-item:last-child { border-bottom: none; }
+        .list-item.no-hover { cursor: default; }
+        .list-item.no-hover:active { background: #ffffff; }
+        
+        .item-content { flex: 1; padding-right: 16px; }
+        .item-label { font-size: 16px; color: #000; font-weight: 400; margin-bottom: 2px; }
+        .item-sublabel { font-size: 13px; color: #8e8e93; }
+        .item-value { font-size: 16px; color: #8e8e93; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .empty-val { font-style: italic; color: #c7c7cc; }
+        .item-action { color: #007aff; font-weight: 500; font-size: 16px; }
+        .item-action.danger { color: #ff3b30; }
+        
+        /* Badges & Toggles */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-active { background: #e5f4eb; color: #34c759; }
+        .badge-canceled { background: #ffe5e5; color: #ff3b30; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 30px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 30px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+        input:checked + .slider { background-color: #34c759; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .loader { padding: 20px; text-align: center; color: #8e8e93; font-size: 14px; }
+
+        /* iOS/Instagram Style Dialog */
+        .dialog-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 9999; opacity: 0; transition: opacity 0.25s ease; }
+        .dialog-overlay.active { display: flex; opacity: 1; }
+        .dialog-box { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); width: 280px; border-radius: 14px; text-align: center; overflow: hidden; transform: scale(1.1); transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .dialog-overlay.active .dialog-box { transform: scale(1); }
+        .dialog-header { padding: 22px 16px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .dialog-header h3 { font-size: 17px; font-weight: 600; margin: 0 0 6px; color: #000; letter-spacing: -0.4px; }
+        .dialog-header p { font-size: 13px; margin: 0; color: #3a3a3c; line-height: 1.4; white-space: pre-wrap; }
+        
+        .dialog-input { margin-top: 16px; width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.2); border-radius: 8px; font-size: 14px; outline: none; background: #fff; }
+        .dialog-input:focus { border-color: #007aff; }
+        .dialog-input.second { margin-top: 8px; }
+        
+        .dialog-actions { display: flex; flex-direction: column; }
+        .dialog-actions.row { flex-direction: row; }
+        .dialog-btn { flex: 1; background: transparent; border: none; padding: 14px; font-size: 17px; color: #007aff; cursor: pointer; transition: background 0.1s; }
+        .dialog-btn:active { background: rgba(0,0,0,0.05); }
+        .dialog-btn.cancel { font-weight: 400; }
+        .dialog-btn.destructive { color: #ff3b30; }
+        .dialog-btn.bold { font-weight: 600; }
+        .dialog-actions:not(.row) .dialog-btn:not(:first-child) { border-top: 1px solid rgba(0,0,0,0.1); }
+        .dialog-actions.row .dialog-btn:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.1); }
+
+        /* FSMEC Specific Auth Overlay */
+        .fsmec-auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+        .fsmec-auth-overlay.active { display: flex; opacity: 1; }
+        .fsmec-logos { display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; margin-bottom: 24px; }
+        .fsmec-logos .g-logo { color: #000; }
+        .fsmec-logos .f-logo { color: #007aff; }
+        .fsmec-logos .divider { color: #c7c7cc; margin: 0 20px; font-weight: 400; transition: all 0.3s; }
+        .fsmec-text { text-align: center; max-width: 300px; margin-bottom: 40px; }
+        .fsmec-text h2 { font-size: 20px; margin-bottom: 12px; color: #000; }
+        .fsmec-text p { font-size: 14px; color: #6d6d72; line-height: 1.5; }
+        .fsmec-actions { width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 12px; }
+        .fsmec-btn { padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; text-align: center; }
+        .fsmec-btn.primary { background: #007aff; color: white; }
+        .fsmec-btn.secondary { background: #f2f2f7; color: #000; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseDots { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+        .connecting-dots { animation: pulseDots 1.5s infinite ease-in-out; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <!-- Standard UI Dialog Overlay -->
+    <div id="ios-dialog-overlay" class="dialog-overlay">
+        <div class="dialog-box">
+            <div class="dialog-header">
+                <h3 id="dialog-title">Title</h3>
+                <p id="dialog-message">Message</p>
+                <input type="text" id="dialog-input" class="dialog-input" style="display:none;" />
+                <input type="text" id="dialog-input-2" class="dialog-input second" style="display:none;" />
+            </div>
+            <div class="dialog-actions" id="dialog-actions"></div>
+        </div>
+    </div>
+
+    <!-- FSMEC Dedicated Auth Overlay -->
+    <div id="fsmec-auth-overlay" class="fsmec-auth-overlay">
+        <div class="fsmec-logos">
+            <span class="g-logo">Garexcell</span><span class="divider" id="fsmec-divider">/</span><span class="f-logo">FSMEC</span>
+        </div>
+        <div class="fsmec-text">
+            <h2>Connect to FSMEC</h2>
+            <p>FSMEC is requesting access to your Garexcell account. This will share your basic profile info and email address.</p>
+        </div>
+        <div class="fsmec-actions">
+            <button class="fsmec-btn primary" id="btn-fsmec-continue" onclick="continueFsmec()">Continue</button>
+            <button class="fsmec-btn secondary" id="btn-fsmec-cancel" onclick="cancelFsmec()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+        <a href="index.html" class="brand-logo">Garexcell</a>
+        <button class="signout-btn" onclick="signout()">Sign Out</button>
+    </header>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="openTab('personal', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Personal
+        </div>
+        <div class="nav-item" onclick="openTab('preferences', this)">
+            <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>Prefs
+        </div>
+        <div class="nav-item" onclick="openTab('security', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>Security
+        </div>
+        <div class="nav-item" onclick="openTab('payment', this)">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Billing
+        </div>
+    </nav>
+
+    <main class="content">
+        <!-- 1. PERSONAL INFO -->
+        <div id="personal" class="tab-content active">
+            <h1 class="page-title">Personal Info</h1>
+            <p class="page-subtitle">Basic info and contact details associated with your account.</p>
+
+            <div class="list-header">Account Details</div>
+            <div class="list-group">
+                <div class="list-item no-hover" onclick="copyAccId()">
+                    <div class="item-label">Account ID</div>
+                    <div class="item-value" id="valAccId" style="color: #007aff;">Loading...</div>
+                </div>
+                <div class="list-item" onclick="updateField('UserInfo', 'fullname', 'Name')">
+                    <div class="item-label">Name</div>
+                    <div class="item-value" id="valName">Loading...</div>
+                </div>
+                <div class="list-item" onclick="updateField('UserInfo', 'dob', 'Date of Birth (YYYY-MM-DD)')">
+                    <div class="item-label">Date of Birth</div>
+                    <div class="item-value" id="valDob"><span class="empty-val">Not set</span></div>
+                </div>
+                <div class="list-item" onclick="updateField('UserInfo', 'gender', 'Gender')">
+                    <div class="item-label">Gender</div>
+                    <div class="item-value" id="valGender"><span class="empty-val">Not set</span></div>
+                </div>
+            </div>
+
+            <div class="list-header">Contact Info</div>
+            <div class="list-group">
+                <div class="list-item no-hover">
+                    <div class="item-label">Email</div>
+                    <div class="item-value" id="valEmail">Loading...</div>
+                </div>
+                <div class="list-item" onclick="updateField('UserContact', 'phone', 'Phone Number')">
+                    <div class="item-label">Phone</div>
+                    <div class="item-value" id="valPhone"><span class="empty-val">Not set</span></div>
+                </div>
+                <div class="list-item" onclick="updateField('UserContact', 'address', 'Residential Address')">
+                    <div class="item-label">Address</div>
+                    <div class="item-value" id="valAddress"><span class="empty-val">Not set</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. PREFERENCES & DATA -->
+        <div id="preferences" class="tab-content">
+            <h1 class="page-title">Preferences</h1>
+            <p class="page-subtitle">Customize your experience and manage data permissions.</p>
+
+            <div class="list-header">General Preferences</div>
+            <div class="list-group">
+                <div class="list-item" onclick="updateField('UserPreferences', 'language', 'Language')">
+                    <div class="item-label">Language</div>
+                    <div class="item-value" id="valLang">English</div>
+                </div>
+                <div class="list-item" onclick="updateField('UserPreferences', 'region', 'Region')">
+                    <div class="item-label">Region</div>
+                    <div class="item-value" id="valRegion">United States</div>
+                </div>
+                <div class="list-item no-hover">
+                    <div class="item-content">
+                        <div class="item-label">Email Notifications</div>
+                        <div class="item-sublabel">Receive updates and offers.</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="emailToggle" onchange="toggleToggle('UserPreferences', 'emailNotifications', 'emailToggle')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="list-header">Data & Privacy</div>
+            <div class="list-group">
+                <div class="list-item no-hover">
+                    <div class="item-content">
+                        <div class="item-label">Personalized Ads</div>
+                        <div class="item-sublabel">Data used to make ads relevant.</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="adToggle" onchange="toggleToggle('UserPrivacy', 'adsEnabled', 'adToggle')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="list-header">Linked Services</div>
+            <div class="list-group" id="linkedList"><div class="loader">Loading...</div></div>
+            
+            <div class="list-header">Available to Link</div>
+            <div class="list-group" id="availableProductsList"><div class="loader">Loading...</div></div>
+        </div>
+
+        <!-- 3. SECURITY -->
+        <div id="security" class="tab-content">
+            <h1 class="page-title">Security</h1>
+            <p class="page-subtitle">Keep your account secure with additional layers of protection.</p>
+
+            <div class="list-header">Account Access</div>
+            <div class="list-group">
+                <div class="list-item" onclick="changePassword()">
+                    <div class="item-content">
+                        <div class="item-label">Change Password</div>
+                        <div class="item-sublabel">Update your Firebase Auth password</div>
+                    </div>
+                    <div class="item-action">Update</div>
+                </div>
+            </div>
+
+            <div class="list-header">Authentication Methods</div>
+            <div class="list-group">
+                <div class="list-item" onclick="generateBackupCodes()">
+                    <div class="item-content">
+                        <div class="item-label">Backup Codes</div>
+                        <div class="item-sublabel" id="backupCodeStatus">Not generated</div>
+                    </div>
+                    <div class="item-action">Generate</div>
+                </div>
+                <div class="list-item" onclick="setupPasskey()">
+                    <div class="item-content">
+                        <div class="item-label">Passkeys</div>
+                        <div class="item-sublabel" id="passkeyStatus">Not configured</div>
+                    </div>
+                    <div class="item-action">Setup</div>
+                </div>
+            </div>
+
+            <div class="list-header">Active Devices</div>
+            <div class="list-group" id="sessionsList">
+                <div class="loader">Loading sessions...</div>
+            </div>
+        </div>
+
+        <!-- 4. BILLING & PAYMENTS -->
+        <div id="payment" class="tab-content">
+            <h1 class="page-title">Billing & Wallet</h1>
+            <p class="page-subtitle">Manage payments, wallet balance, and subscriptions.</p>
+
+            <div class="list-group">
+                <div class="list-item no-hover">
+                    <div class="item-label">Garexcell Balance</div>
+                    <div class="item-value" id="walletBalance" style="color: #34c759; font-weight: 700; font-size: 20px;">$0.00</div>
+                </div>
+                <div class="list-item" onclick="redeemGiftCard()">
+                    <div class="item-action">Redeem Gift Card or Voucher</div>
+                </div>
+            </div>
+
+            <div class="list-header">Billing Details</div>
+            <div class="list-group">
+                <div class="list-item" onclick="updateField('UserBilling', 'billingAddress', 'Billing Address')">
+                    <div class="item-label">Billing Address</div>
+                    <div class="item-value" id="valBillingAddr"><span class="empty-val">Not set</span></div>
+                </div>
+                <div class="list-item" onclick="updateField('UserBilling', 'taxId', 'Tax ID / VAT Number')">
+                    <div class="item-label">Tax ID</div>
+                    <div class="item-value" id="valTaxId"><span class="empty-val">Not set</span></div>
+                </div>
+            </div>
+
+            <div class="list-header">Payment Methods</div>
+            <div class="list-group" id="savedCardsList"></div>
+            <div class="list-group">
+                <div class="list-item" onclick="addCard()">
+                    <div class="item-action">Add New Card</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAuth, updatePassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBm9TTk3n0GnReoojNTwvmjFkcRvLLX-EY",
+            authDomain: "garexcell-jm.firebaseapp.com",
+            projectId: "garexcell-jm",
+            storageBucket: "garexcell-jm.firebasestorage.app",
+            messagingSenderId: "535515275879",
+            appId: "1:535515275879:web:30564c2e6d2cfcc1efaac2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUserUid = null;
+        let currentUserEmail = null;
+        
+        // --- CUSTOM UI DIALOG SYSTEM ---
+        function showCustomDialog({ title, message, type = 'alert', inputPlaceholder = '', inputPlaceholder2 = '', initialValue = '', confirmText = 'OK', cancelText = 'Cancel', isDestructive = false }, onConfirm) {
+            const overlay = document.getElementById('ios-dialog-overlay');
+            const inputEl = document.getElementById('dialog-input');
+            const inputEl2 = document.getElementById('dialog-input-2');
+            const actionsEl = document.getElementById('dialog-actions');
+            
+            document.getElementById('dialog-title').innerText = title || '';
+            document.getElementById('dialog-message').innerText = message || '';
+
+            inputEl.style.display = 'none';
+            inputEl2.style.display = 'none';
+            inputEl.type = 'text';
+
+            if (type === 'prompt') {
+                inputEl.style.display = 'block';
+                inputEl.placeholder = inputPlaceholder;
+                inputEl.value = initialValue;
+                setTimeout(() => inputEl.focus(), 100);
+            } else if (type === 'password') {
+                inputEl.style.display = 'block';
+                inputEl.type = 'password';
+                inputEl.placeholder = inputPlaceholder;
+                inputEl.value = '';
+                
+                inputEl2.style.display = 'block';
+                inputEl2.type = 'password';
+                inputEl2.placeholder = inputPlaceholder2;
+                inputEl2.value = '';
+                setTimeout(() => inputEl.focus(), 100);
+            }
+
+            actionsEl.innerHTML = '';
+            const close = () => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.style.display = 'none', 250);
+            };
+
+            overlay.style.display = 'flex';
+            void overlay.offsetWidth; 
+            overlay.classList.add('active');
+
+            if (type === 'alert') {
+                actionsEl.className = 'dialog-actions';
+                const btn = document.createElement('button');
+                btn.className = 'dialog-btn bold';
+                btn.innerText = confirmText;
+                btn.onclick = () => { close(); if(onConfirm) onConfirm(); };
+                actionsEl.appendChild(btn);
+            } else {
+                actionsEl.className = 'dialog-actions row';
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'dialog-btn cancel';
+                cancelBtn.innerText = cancelText;
+                cancelBtn.onclick = close;
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = `dialog-btn bold ${isDestructive ? 'destructive' : ''}`;
+                confirmBtn.innerText = confirmText;
+                confirmBtn.onclick = () => { 
+                    close(); 
+                    if (type === 'prompt') onConfirm(inputEl.value); 
+                    else if (type === 'password') onConfirm(inputEl.value, inputEl2.value);
+                    else onConfirm(); 
+                };
+                
+                actionsEl.appendChild(cancelBtn);
+                actionsEl.appendChild(confirmBtn);
+            }
+        }
+
+        // --- CACHE MANAGEMENT ---
+        let localCache = {
+            UserInfo: {}, UserContact: {}, UserPrivacy: { adsEnabled: true },
+            UserPreferences: { language: 'English', region: 'United States', emailNotifications: true },
+            UserBilling: {}, LinkedServices: { apps: [] }, UserSecurity: {}, 
+            UserPayments: { cards: [], balance: 0 }, UserSessions: []
+        };
+
+        const getCacheKey = () => `gx_cache_${currentUserUid}`;
+        function saveCache() { localStorage.setItem(getCacheKey(), JSON.stringify(localCache)); }
+        function loadCache() { const str = localStorage.getItem(getCacheKey()); return str ? JSON.parse(str) : null; }
+
+        window.onload = async () => {
+            const userStr = localStorage.getItem('gx_user');
+            if (!userStr) { window.location.href = 'sso.html'; return; }
+            
+            const user = JSON.parse(userStr);
+            currentUserUid = user.uid;
+            currentUserEmail = user.email;
+            document.getElementById('valEmail').innerText = user.email;
+
+            const cachedData = loadCache();
+            if (cachedData) {
+                if(!cachedData.UserPreferences) cachedData.UserPreferences = localCache.UserPreferences;
+                if(!cachedData.UserBilling) cachedData.UserBilling = localCache.UserBilling;
+                if(!cachedData.UserSessions) cachedData.UserSessions = [];
+                localCache = cachedData;
+                await ensureAccountId();
+                await ensureCurrentSession();
+                renderUI();
+            } else {
+                await fetchAllUserDataFromFirebase();
+            }
+        };
+
+        window.openTab = function(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+            window.scrollTo(0,0);
+        };
+
+        // --- ACCOUNT ID & SESSIONS ---
+        async function ensureAccountId() {
+            if (!localCache.UserInfo.AccId) {
+                const newAccId = `ARN40${Math.floor(1000000 + Math.random() * 9000000)}`;
+                try {
+                    await setDoc(doc(db, "UserInfo", currentUserUid), { AccId: newAccId }, { merge: true });
+                    localCache.UserInfo.AccId = newAccId; saveCache();
+                } catch(e) {}
+            }
+        }
+
+        async function ensureCurrentSession() {
+            if(localCache.UserSessions.length === 0) {
+                const sessionData = {
+                    Uid: currentUserUid,
+                    email_address: currentUserEmail,
+                    device_model: navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop Browser',
+                    ip_address: "192.168.1." + Math.floor(Math.random() * 255), // Mock IP
+                    region: "Mandeville, JM",
+                    timestamp: new Date().toISOString()
+                };
+                try {
+                    const docRef = await addDoc(collection(db, "UserSessions"), sessionData);
+                    localCache.UserSessions.push({ id: docRef.id, ...sessionData });
+                    saveCache();
+                } catch(e) { console.error("Could not write session"); }
+            }
+        }
+
+        async function fetchAllUserDataFromFirebase() {
+            try {
+                const [infoDoc, contactDoc, privDoc, prefDoc, billDoc, linkDoc, secDoc, payDoc, sessSnap] = await Promise.all([
+                    getDoc(doc(db, "UserInfo", currentUserUid)), getDoc(doc(db, "UserContact", currentUserUid)),
+                    getDoc(doc(db, "UserPrivacy", currentUserUid)), getDoc(doc(db, "UserPreferences", currentUserUid)),
+                    getDoc(doc(db, "UserBilling", currentUserUid)), getDoc(doc(db, "LinkedServices", currentUserUid)),
+                    getDoc(doc(db, "UserSecurity", currentUserUid)), getDoc(doc(db, "UserPayments", currentUserUid)),
+                    getDocs(query(collection(db, "UserSessions"), where("Uid", "==", currentUserUid)))
+                ]);
+
+                if (infoDoc.exists()) localCache.UserInfo = infoDoc.data();
+                if (contactDoc.exists()) localCache.UserContact = contactDoc.data();
+                if (privDoc.exists() && privDoc.data().adsEnabled !== undefined) localCache.UserPrivacy.adsEnabled = privDoc.data().adsEnabled;
+                if (prefDoc.exists()) localCache.UserPreferences = { ...localCache.UserPreferences, ...prefDoc.data() };
+                if (billDoc.exists()) localCache.UserBilling = billDoc.data();
+                if (linkDoc.exists() && linkDoc.data().apps) localCache.LinkedServices.apps = linkDoc.data().apps;
+                if (secDoc.exists()) localCache.UserSecurity = secDoc.data();
+                if (payDoc.exists()) {
+                    localCache.UserPayments.cards = payDoc.data().cards || [];
+                    localCache.UserPayments.balance = payDoc.data().balance || 0;
+                }
+                
+                localCache.UserSessions = [];
+                sessSnap.forEach(snap => localCache.UserSessions.push({ id: snap.id, ...snap.data() }));
+
+                await ensureAccountId();
+                await ensureCurrentSession();
+                saveCache(); renderUI();
+            } catch (error) { 
+                showCustomDialog({title: 'Sync Error', message: 'Could not load your data. Please check your connection.'}); 
+            }
+        }
+
+        function renderUI() {
+            document.getElementById('valAccId').innerText = localCache.UserInfo.AccId || 'Loading...';
+            document.getElementById('valName').innerHTML = localCache.UserInfo.fullname || `<span class="empty-val">Not set</span>`;
+            document.getElementById('valDob').innerHTML = localCache.UserInfo.dob || `<span class="empty-val">Not set</span>`;
+            document.getElementById('valGender').innerHTML = localCache.UserInfo.gender || `<span class="empty-val">Not set</span>`;
+            document.getElementById('valAddress').innerHTML = localCache.UserContact.address || `<span class="empty-val">Not set</span>`;
+            document.getElementById('valPhone').innerHTML = localCache.UserContact.phone || `<span class="empty-val">Not set</span>`;
+            
+            document.getElementById('valLang').innerText = localCache.UserPreferences.language || 'English';
+            document.getElementById('valRegion').innerText = localCache.UserPreferences.region || 'United States';
+            document.getElementById('emailToggle').checked = localCache.UserPreferences.emailNotifications;
+            document.getElementById('adToggle').checked = localCache.UserPrivacy.adsEnabled;
+            
+            document.getElementById('valBillingAddr').innerHTML = localCache.UserBilling.billingAddress || `<span class="empty-val">Not set</span>`;
+            document.getElementById('valTaxId').innerHTML = localCache.UserBilling.taxId || `<span class="empty-val">Not set</span>`;
+
+            if (localCache.UserSecurity.backupCodes?.length > 0) document.getElementById('backupCodeStatus').innerText = `${localCache.UserSecurity.backupCodes.length} codes active`;
+            if (localCache.UserSecurity.hasPasskey) document.getElementById('passkeyStatus').innerText = "Active";
+
+            renderLinkedApps();
+            document.getElementById('walletBalance').innerText = `$${(localCache.UserPayments.balance || 0).toFixed(2)}`;
+            renderCards();
+            renderSessions();
+        }
+
+        function renderLinkedApps() {
+            const apps = localCache.LinkedServices.apps || [];
+            const linkedList = document.getElementById('linkedList');
+            const availableList = document.getElementById('availableProductsList');
+            
+            const allProducts = ['FSMEC', 'Playxcade', 'Rex Ai'];
+            const available = allProducts.filter(p => !apps.includes(p));
+
+            if (apps.length === 0) { 
+                linkedList.innerHTML = `<div class="list-item no-hover"><div class="item-label empty-val">No services linked</div></div>`; 
+            } else {
+                linkedList.innerHTML = apps.map(app => `
+                    <div class="list-item no-hover">
+                        <div class="item-label">${app}</div>
+                        <div class="item-action danger" style="cursor:pointer;" onclick="unlinkProduct('${app}')">Unlink</div>
+                    </div>
+                `).join('');
+            }
+
+            if(available.length === 0) {
+                availableList.innerHTML = `<div class="list-item no-hover"><div class="item-label empty-val">All products linked</div></div>`;
+            } else {
+                availableList.innerHTML = available.map(app => `
+                    <div class="list-item" onclick="initiateLink('${app}')">
+                        <div class="item-action">Link ${app}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderCards() {
+            const cards = localCache.UserPayments.cards || [];
+            const list = document.getElementById('savedCardsList');
+            if (cards.length === 0) { list.innerHTML = `<div class="list-item no-hover"><div class="item-label empty-val">No cards saved</div></div>`; return; }
+            list.innerHTML = cards.map((c, i) => `
+                <div class="list-item no-hover">
+                    <div class="item-content">
+                        <div class="item-label">${c.brand}</div>
+                        <div class="item-sublabel">•••• ${c.last4}</div>
+                    </div>
+                    <div class="item-action danger" style="cursor:pointer;" onclick="removeCard(${i})">Remove</div>
+                </div>
+            `).join('');
+        }
+
+        function renderSessions() {
+            const sessList = document.getElementById('sessionsList');
+            const sessions = localCache.UserSessions || [];
+            if (sessions.length === 0) { sessList.innerHTML = `<div class="list-item no-hover"><div class="item-label empty-val">No active sessions.</div></div>`; return; }
+
+            sessList.innerHTML = sessions.map(s => `
+                <div class="list-item no-hover">
+                    <div class="item-content">
+                        <div class="item-label">${s.device_model}</div>
+                        <div class="item-sublabel">${s.ip_address} • ${s.region}</div>
+                    </div>
+                    <div class="item-action danger" style="cursor:pointer;" onclick="removeSession('${s.id}')">Sign Out</div>
+                </div>
+            `).join('');
+        }
+
+        // --- PASSWORD CHANGE ---
+        window.changePassword = function() {
+            showCustomDialog({
+                type: 'password', title: 'Change Password', message: 'Enter and confirm your new password.',
+                inputPlaceholder: 'New Password', inputPlaceholder2: 'Confirm Password', confirmText: 'Update'
+            }, async (pass1, pass2) => {
+                if (!pass1 || pass1.length < 6) return showCustomDialog({title: 'Error', message: 'Password must be at least 6 characters.'});
+                if (pass1 !== pass2) return showCustomDialog({title: 'Error', message: 'Passwords do not match.'});
+
+                const user = auth.currentUser;
+                if (!user) return showCustomDialog({title: 'Authentication Error', message: 'Please sign out and sign in again to verify your identity before changing your password.'});
+
+                try {
+                    await updatePassword(user, pass1);
+                    showCustomDialog({title: 'Success', message: 'Your password has been successfully updated.'});
+                } catch (error) {
+                    showCustomDialog({title: 'Update Failed', message: 'Please sign out and sign in again to verify your identity before changing your password.'});
+                }
+            });
+        };
+
+        window.removeSession = function(sessionId) {
+            showCustomDialog({ type: 'confirm', title: 'Sign Out Device', message: 'Are you sure you want to sign out this device?', isDestructive: true, confirmText: 'Sign Out' }, async () => {
+                try {
+                    await deleteDoc(doc(db, "UserSessions", sessionId));
+                    localCache.UserSessions = localCache.UserSessions.filter(s => s.id !== sessionId);
+                    saveCache(); renderUI();
+                } catch(e) { showCustomDialog({title: 'Error', message: 'Failed to sign out device.'}); }
+            });
+        };
+
+        // --- FSMEC AUTH & GENERAL UPDATES ---
+        window.initiateLink = function(appName) {
+            if(appName === 'FSMEC') {
+                const overlay = document.getElementById('fsmec-auth-overlay');
+                document.getElementById('fsmec-divider').innerText = '/';
+                document.getElementById('fsmec-divider').className = 'divider';
+                document.getElementById('btn-fsmec-continue').disabled = false;
+                document.getElementById('btn-fsmec-cancel').disabled = false;
+                overlay.style.display = 'flex'; void overlay.offsetWidth; overlay.classList.add('active');
+            } else linkProductToFirebase(appName);
+        };
+
+        window.cancelFsmec = function() {
+            const overlay = document.getElementById('fsmec-auth-overlay');
+            overlay.classList.remove('active'); setTimeout(() => overlay.style.display = 'none', 300);
+        };
+
+        window.continueFsmec = function() {
+            const divider = document.getElementById('fsmec-divider');
+            document.getElementById('btn-fsmec-continue').disabled = true; document.getElementById('btn-fsmec-cancel').disabled = true;
+            divider.innerText = '........'; divider.className = 'divider connecting-dots';
+            
+            setTimeout(() => {
+                localStorage.setItem('fsmec_access_token', "fsmec_token_" + Math.random().toString(36).substr(2, 9));
+                linkProductToFirebase('FSMEC'); cancelFsmec();
+            }, 1800);
+        };
+
+        window.copyAccId = function() {
+            const id = localCache.UserInfo.AccId;
+            if(id) { navigator.clipboard.writeText(id); showCustomDialog({title: 'Copied', message: 'Account ID copied to clipboard.'}); }
+        };
+
+        window.updateField = function(collectionName, field, displayName) {
+            const currentVal = localCache[collectionName][field] || '';
+            showCustomDialog({ type: 'prompt', title: `Update ${displayName}`, message: `Enter your ${displayName.toLowerCase()}.`, initialValue: currentVal, confirmText: 'Save' }, async (newVal) => {
+                if (newVal !== null && newVal.trim() !== "" && newVal !== currentVal) {
+                    try {
+                        await setDoc(doc(db, collectionName, currentUserUid), { [field]: newVal.trim() }, { merge: true });
+                        localCache[collectionName][field] = newVal.trim(); saveCache(); renderUI();
+                    } catch (error) { showCustomDialog({title: 'Error', message: 'Failed to save changes.'}); }
+                }
+            });
+        };
+
+        window.toggleToggle = async function(collectionName, field, toggleId) {
+            const isChecked = document.getElementById(toggleId).checked;
+            try { 
+                await setDoc(doc(db, collectionName, currentUserUid), { [field]: isChecked }, { merge: true });
+                localCache[collectionName][field] = isChecked; saveCache();
+            } catch (error) { document.getElementById(toggleId).checked = !isChecked; }
+        };
+
+        async function linkProductToFirebase(appName) {
+            if(!localCache.LinkedServices.apps.includes(appName)) {
+                try {
+                    await setDoc(doc(db, "LinkedServices", currentUserUid), { apps: arrayUnion(appName) }, { merge: true });
+                    localCache.LinkedServices.apps.push(appName); saveCache(); renderUI();
+                } catch (error) { showCustomDialog({title: 'Error', message: 'Failed to link service.'}); }
+            }
+        }
+        
+        window.unlinkProduct = function(appName) {
+            showCustomDialog({ type: 'confirm', title: 'Unlink Service', message: `Unlink ${appName}?`, isDestructive: true, confirmText: 'Unlink' }, async () => {
+                try {
+                    await setDoc(doc(db, "LinkedServices", currentUserUid), { apps: arrayRemove(appName) }, { merge: true });
+                    localCache.LinkedServices.apps = localCache.LinkedServices.apps.filter(app => app !== appName); saveCache(); renderUI();
+                } catch (error) { showCustomDialog({title: 'Error', message: 'Failed to unlink service.'}); }
+            });
+        };
+
+        window.generateBackupCodes = function() {
+            showCustomDialog({ type: 'confirm', title: 'Backup Codes', message: 'Generate new backup codes? This invalidates old ones.', confirmText: 'Generate' }, async () => {
+                const codes = Array.from({length: 4}, () => Math.floor(1000 + Math.random() * 9000).toString());
+                await setDoc(doc(db, "UserSecurity", currentUserUid), { backupCodes: codes }, { merge: true });
+                localCache.UserSecurity.backupCodes = codes; saveCache(); renderUI();
+                showCustomDialog({ title: 'Save Your Codes', message: `Please save these codes safely:\n\n${codes.join('   ')}` });
+            });
+        };
+
+        window.setupPasskey = async function() {
+            await setDoc(doc(db, "UserSecurity", currentUserUid), { hasPasskey: true }, { merge: true });
+            localCache.UserSecurity.hasPasskey = true; saveCache(); renderUI();
+            showCustomDialog({title: 'Passkey Active', message: 'Passkey successfully linked to your device.'});
+        };
+
+        window.addCard = function() {
+            showCustomDialog({ type: 'prompt', title: 'Add Card', message: 'Enter your 16-digit card number.', inputPlaceholder: 'Card Number', confirmText: 'Add' }, async (cardInput) => {
+                cardInput = cardInput.replace(/\s/g, '');
+                if (cardInput.length < 13 || cardInput.length > 19 || isNaN(cardInput) || cardInput.startsWith('4000')) {
+                    showCustomDialog({title: 'Invalid Card', message: 'The card number provided is invalid.'}); return;
+                }
+                const newCard = { last4: cardInput.slice(-4), brand: cardInput.startsWith('4') ? 'Visa' : 'Mastercard' };
+                await setDoc(doc(db, "UserPayments", currentUserUid), { cards: arrayUnion(newCard) }, { merge: true });
+                localCache.UserPayments.cards.push(newCard); saveCache(); renderUI();
+            });
+        };
+
+        window.removeCard = function(index) {
+            showCustomDialog({ type: 'confirm', title: 'Remove Card', message: 'Remove this payment method?', isDestructive: true, confirmText: 'Remove' }, async () => {
+                const cardToRemove = localCache.UserPayments.cards[index];
+                await setDoc(doc(db, "UserPayments", currentUserUid), { cards: arrayRemove(cardToRemove) }, { merge: true });
+                localCache.UserPayments.cards.splice(index, 1); saveCache(); renderUI();
+            });
+        };
+
+        window.redeemGiftCard = function() {
+            showCustomDialog({ type: 'prompt', title: 'Redeem Code', message: 'Enter your voucher code.', inputPlaceholder: 'Voucher Code', confirmText: 'Redeem' }, async (voucher) => {
+                if(!voucher) return;
+                const newBalance = localCache.UserPayments.balance + 50.00;
+                await setDoc(doc(db, "UserPayments", currentUserUid), { balance: newBalance }, { merge: true });
+                localCache.UserPayments.balance = newBalance; saveCache(); renderUI();
+                showCustomDialog({title: 'Success', message: `Added $50.00 to your wallet.`});
+            });
+        };
+
+        window.signout = function() {
+            showCustomDialog({ type: 'confirm', title: 'Sign Out', message: 'Sign out of your Garexcell account?', isDestructive: true, confirmText: 'Sign Out' }, () => {
+                localStorage.removeItem(getCacheKey()); localStorage.removeItem('gx_user');
+                window.location.href = 'index.html';
+            });
+        };
+    </script>
+</body>
+</html>
