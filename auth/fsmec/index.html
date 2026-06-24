@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorize Application - Garexcell SSO</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; }
+        
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); 
+            color: #111827;
+        }
+        
+        .auth-container { 
+            background: #ffffff; 
+            width: 100%; 
+            max-width: 440px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .header {
+            padding: 32px 32px 16px;
+            text-align: center;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .app-logo {
+            width: 48px;
+            height: 48px;
+            background: #1e3c72;
+            color: white;
+            border-radius: 12px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .header h1 { font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+        .header p { font-size: 14px; color: #6b7280; line-height: 1.5; }
+
+        .content { padding: 24px 32px; }
+
+        /* User Profile Block */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            margin-right: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .user-details { flex: 1; overflow: hidden; }
+        .user-name { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-email { font-size: 13px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Permissions List */
+        .permissions-title { font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .permission-item { display: flex; align-items: flex-start; margin-bottom: 12px; font-size: 14px; color: #334155; }
+        .permission-item svg { width: 18px; height: 18px; color: #1e3c72; margin-right: 12px; flex-shrink: 0; margin-top: 2px; }
+
+        /* Actions */
+        .actions {
+            padding: 0 32px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-primary { 
+            background: #1e3c72; 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 600; 
+            width: 100%; 
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #2a5298; }
+        
+        .btn-cancel {
+            background: transparent;
+            color: #64748b;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-cancel:hover { background: #f1f5f9; color: #334155; }
+
+        .footer-note { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 16px; padding: 0 32px 24px; line-height: 1.5; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="header">
+            <div class="app-logo">G</div>
+            <h1>Authorize Application</h1>
+            <p>An external service is requesting access to your Garexcell account credentials.</p>
+        </div>
+
+        <div class="content">
+            <div class="user-profile">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-email" id="userEmail">Loading...</div>
+                </div>
+            </div>
+
+            <div class="permissions-title">This application will be able to:</div>
+            
+            <div class="permission-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                View your basic profile information (Name, Avatar).
+            </div>
+            <div class="permission-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                View the email address associated with your account.
+            </div>
+            <div class="permission-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                Verify your identity across authorized domains.
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" onclick="authorizeAndContinue()">Continue as <span id="btnName">User</span></button>
+            <button class="btn-cancel" onclick="cancelAuth()">Cancel</button>
+        </div>
+
+        <div class="footer-note">
+            By clicking continue, you allow Garexcell to share your authentication status with authorized external domains.
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBm9TTk3n0GnReoojNTwvmjFkcRvLLX-EY",
+            authDomain: "garexcell-jm.firebaseapp.com",
+            projectId: "garexcell-jm",
+            storageBucket: "garexcell-jm.firebasestorage.app",
+            messagingSenderId: "535515275879",
+            appId: "1:535515275879:web:30564c2e6d2cfcc1efaac2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Required Authorization Data
+        let userProfile = null;
+        const TARGET_CALLBACK_URL = "https://istartu.com/auth/callback"; // Callback Placeholder
+        const ALLOWED_DOMAINS = [
+            "auth.garexcell.com",
+            "sso.garexcell.com",
+            "garexcell.com",
+            "sports.garexcell.com",
+            "ai.garexcell.com",
+            "istartu.com"
+        ];
+
+        window.onload = () => {
+            const userStr = localStorage.getItem('gx_user');
+            if (!userStr) {
+                // If not logged in, force them to SSO first, then return here
+                window.location.href = `sso.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            userProfile = JSON.parse(userStr);
+            
+            // Populate UI
+            const name = userProfile.name || 'User';
+            const email = userProfile.email || '';
+            
+            document.getElementById('userName').innerText = name;
+            document.getElementById('btnName').innerText = name.split(' ')[0]; // First name on button
+            document.getElementById('userEmail').innerText = email;
+            
+            // Generate Avatar Initial based on Name or Email
+            const initial = name !== 'User' ? name.charAt(0).toUpperCase() : email.charAt(0).toUpperCase();
+            document.getElementById('userAvatar').innerText = initial;
+            
+            // Generate a random gradient color for the avatar
+            const colors = ['#1e3c72', '#059669', '#dc2626', '#d97706', '#7c3aed'];
+            const randomColor = colors[initial.charCodeAt(0) % colors.length];
+            document.getElementById('userAvatar').style.background = randomColor;
+        };
+
+        window.authorizeAndContinue = function() {
+            if (!userProfile) return;
+
+            // 1. Generate Custom Auth Token (Frontend Mock of a JWT for simulation)
+            const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+            const payload = btoa(JSON.stringify({
+                uid: userProfile.uid,
+                email: userProfile.email,
+                name: userProfile.name,
+                iss: "auth.garexcell.com",
+                aud: ALLOWED_DOMAINS,
+                exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours
+            }));
+            const signature = "mock_signature_x8a9b2c3"; // Mock signature
+            const customToken = `${header}.${payload}.${signature}`;
+
+            // 2. Set LocalStorage (Works for current origin)
+            localStorage.setItem('gx_custom_auth_token', customToken);
+
+            // 3. Set Wildcard Cookie for Garexcell subdomains
+            // This allows sso.garexcell.com, ai.garexcell.com, etc., to read the session.
+            const expiry = new Date();
+            expiry.setTime(expiry.getTime() + (24 * 60 * 60 * 1000));
+            document.cookie = `gx_session_token=${customToken}; expires=${expiry.toUTCString()}; path=/; domain=.garexcell.com; Secure; SameSite=Lax`;
+
+            // 4. Redirect to Callback for External Domains (e.g., istartu.com)
+            // Browsers block setting cross-domain cookies directly, so the secure method is passing the token in the URL fragment to the external site, which then saves it to its own local storage/cookies.
+            
+            const btn = document.querySelector('.btn-primary');
+            btn.innerText = "Authorizing...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                // Redirect to the placeholder callback with the token securely appended
+                window.location.href = `${TARGET_CALLBACK_URL}#token=${customToken}`;
+            }, 800);
+        };
+
+        window.cancelAuth = function() {
+            alert("Authorization cancelled.");
+            window.history.back();
+        };
+    </script>
+</body>
+</html>
