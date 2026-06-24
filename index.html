@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garexcell - AI & BaaS ML</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { margin: 0; background: #f8f9fa; color: #202124; }
+        
+        /* Modern Header */
+        header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 100; }
+        .logo { font-size: 26px; font-weight: 700; color: #1a73e8; letter-spacing: -0.5px; }
+        
+        /* Hamburger Menu */
+        .menu-container { position: relative; }
+        .hamburger { font-size: 24px; cursor: pointer; background: none; border: none; padding: 8px; border-radius: 50%; transition: background 0.2s; }
+        .hamburger:hover { background: #f1f3f4; }
+        .menu { display: none; position: absolute; top: 50px; right: 0; background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.12); border-radius: 12px; padding: 8px 0; width: 220px; overflow: hidden; }
+        .menu.active { display: block; animation: fadeIn 0.2s ease-out; }
+        .menu a { display: block; padding: 12px 24px; text-decoration: none; color: #3c4043; font-weight: 500; transition: background 0.2s; }
+        .menu a:hover { background: #f8f9fa; color: #1a73e8; }
+        
+        /* Hero Section */
+        .hero { padding: 160px 20px 100px; text-align: center; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .hero h1 { font-size: 56px; color: #202124; margin-bottom: 20px; letter-spacing: -1.5px; }
+        .hero span.gradient { background: -webkit-linear-gradient(#1a73e8, #8ab4f8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 20px; color: #5f6368; max-width: 650px; margin: 0 auto 40px; line-height: 1.6; }
+        
+        .footer-link { display: inline-block; padding: 12px 28px; background: white; color: #1a73e8; text-decoration: none; border-radius: 24px; font-weight: 600; box-shadow: 0 2px 6px rgba(26,115,232,0.15); transition: all 0.2s; border: 1px solid #e8eaed; }
+        .footer-link:hover { box-shadow: 0 4px 12px rgba(26,115,232,0.25); transform: translateY(-1px); }
+
+        /* Premium Chatbot Widget */
+        .fab { position: fixed; bottom: 30px; right: 30px; background: #1a73e8; color: white; width: 64px; height: 64px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(26,115,232,0.4); font-size: 28px; z-index: 1000; transition: transform 0.2s; }
+        .fab:hover { transform: scale(1.05); }
+        .chat-window { display: none; position: fixed; bottom: 110px; right: 30px; width: 340px; height: 480px; background: #fff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); flex-direction: column; z-index: 1000; overflow: hidden; animation: slideUp 0.3s ease; }
+        .chat-header { background: #1a73e8; color: white; padding: 18px 20px; font-weight: 600; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .close-chat { cursor: pointer; background: none; border: none; color: white; font-size: 20px; opacity: 0.8; }
+        .close-chat:hover { opacity: 1; }
+        .chat-body { flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 12px; }
+        .chat-input { display: flex; padding: 12px; border-top: 1px solid #e8eaed; background: white; }
+        .chat-input input { flex: 1; padding: 12px 16px; border: 1px solid #dadce0; outline: none; border-radius: 24px; font-size: 14px; transition: border-color 0.2s; }
+        .chat-input input:focus { border-color: #1a73e8; }
+        .chat-input button { padding: 8px 16px; background: none; color: #1a73e8; border: none; cursor: pointer; font-weight: 600; }
+        
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 85%; font-size: 14px; line-height: 1.4; }
+        .msg.bot { background: #e8eaed; align-self: flex-start; border-bottom-left-radius: 4px; color: #202124; }
+        .msg.user { background: #1a73e8; color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 2px 5px rgba(26,115,232,0.2); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Garexcell</div>
+        <div class="menu-container">
+            <button class="hamburger" onclick="toggleMenu()">☰</button>
+            <div class="menu" id="navMenu">
+                <a href="sso.html" id="accountLink">Sign In / Manage Account</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="hero">
+        <h1>Next-Gen <span class="gradient">AI & BaaS ML</span></h1>
+        <p>Garexcell provides cutting-edge Artificial Intelligence and Backend-as-a-Service Machine Learning solutions to scale your infrastructure effortlessly.</p>
+        <a href="about.html" class="footer-link">Learn more about Garexcell</a>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <div class="fab" onclick="toggleChat()">💬</div>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span>Garexcell AI Assistant</span>
+            <button class="close-chat" onclick="toggleChat()">✕</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="msg bot">Hello! I'm the Garexcell AI. How can I help you today?</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask something..." onkeypress="handleChatEnter(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        window.onload = () => {
+            const user = JSON.parse(localStorage.getItem('gx_user'));
+            const accountLink = document.getElementById('accountLink');
+            if (user && user.email) {
+                accountLink.innerText = user.name || user.email;
+                accountLink.href = 'account.html';
+            }
+        };
+
+        function toggleMenu() { document.getElementById('navMenu').classList.toggle('active'); }
+        function toggleChat() {
+            const chat = document.getElementById('chatWindow');
+            chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        const macros = {
+            "hello": "Hi there! How can I help you with Garexcell's BaaS?",
+            "pricing": "Our BaaS ML plans are tailored to your usage. Check the accounts page for details.",
+            "support": "You can manage your access and linked devices in your Account Settings."
+        };
+
+        function handleChatEnter(e) { if (e.key === 'Enter') sendMessage(); }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim().toLowerCase();
+            if (!text) return;
+            
+            addMsg(input.value, 'user');
+            input.value = '';
+
+            setTimeout(() => {
+                const reply = macros[text] || "I am a simple macro bot. Try saying 'hello', 'pricing', or 'support'.";
+                addMsg(reply, 'bot');
+            }, 600);
+        }
+
+        function addMsg(text, sender) {
+            const body = document.getElementById('chatBody');
+            const div = document.createElement('div');
+            div.className = `msg ${sender}`;
+            div.innerText = text;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        }
+    </script>
+</body>
+</html>
