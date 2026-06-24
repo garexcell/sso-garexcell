@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garexcell Authentication</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+        
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            color: #333;
+        }
+        
+        .auth-container { 
+            background: #ffffff; 
+            width: 100%; 
+            max-width: 480px; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25); 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .auth-header {
+            text-align: center;
+            padding: 30px 30px 20px;
+        }
+
+        .logo { font-size: 28px; font-weight: 800; color: #1e3c72; letter-spacing: -0.5px; }
+        .subtitle { font-size: 14px; color: #64748b; margin-top: 5px; }
+
+        /* Auth Bar / Tabs */
+        .auth-tabs {
+            display: flex;
+            background: #f1f5f9;
+            margin: 0 30px 20px;
+            border-radius: 10px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: #1e3c72;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Form Sections */
+        .form-section {
+            display: none;
+            padding: 0 30px 30px;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .form-section.active { display: block; }
+
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+        
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            background: #f8fafc; 
+            border: 1.5px solid #e2e8f0; 
+            border-radius: 10px; 
+            font-size: 15px; 
+            color: #0f172a;
+            transition: all 0.2s; 
+            outline: none; 
+        }
+        
+        input:focus, select:focus { 
+            border-color: #2a5298; 
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
+        }
+
+        .row { display: flex; gap: 12px; }
+        .row .input-group { flex: 1; }
+
+        /* Buttons */
+        .btn-primary { 
+            background: #1e3c72; 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 700; 
+            width: 100%; 
+            transition: all 0.2s; 
+            margin-top: 10px;
+        }
+        .btn-primary:hover { background: #2a5298; transform: translateY(-1px); }
+        .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 24px 0;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #e2e8f0; }
+        .divider:not(:empty)::before { margin-right: .25em; }
+        .divider:not(:empty)::after { margin-left: .25em; }
+
+        .btn-sso {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1.5px solid #e2e8f0;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-sso:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+        /* Terms of Service Box */
+        .tos-box {
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            background: #f8fafc;
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .tos-container { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; margin-bottom: 20px; }
+        .tos-container input { width: 18px; height: 18px; margin-top: 2px; accent-color: #1e3c72; cursor: pointer; }
+
+        /* Custom Scrollbar for inner forms */
+        .form-section::-webkit-scrollbar { width: 6px; }
+        .form-section::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="logo">Garexcell</div>
+            <div class="subtitle">AI & BaaS Infrastructure</div>
+        </div>
+
+        <div class="auth-tabs">
+            <button class="tab-btn active" onclick="switchTab('login')" id="tab-login">Login</button>
+            <button class="tab-btn" onclick="switchTab('signup')" id="tab-signup">Sign Up</button>
+        </div>
+
+        <div id="loginUI" class="form-section active">
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="loginEmail" placeholder="name@company.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPass" placeholder="••••••••">
+            </div>
+            
+            <button class="btn-primary" onclick="login()">Sign In</button>
+            
+            <div class="divider">Or continue with</div>
+            
+            <button class="btn-sso" onclick="alert('Redirecting to SSO Provider...')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                SSO LOGIN
+            </button>
+        </div>
+
+        <div id="signupUI" class="form-section">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="suName" placeholder="John Doe">
+            </div>
+            
+            <div class="row">
+                <div class="input-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="suDob">
+                </div>
+                <div class="input-group">
+                    <label>Gender</label>
+                    <select id="suGender">
+                        <option value="" disabled selected>Select</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="suEmail" placeholder="name@company.com">
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="suPass" placeholder="Create a strong password">
+            </div>
+
+            <div class="input-group" style="margin-top: 20px;">
+                <label>Terms and Privacy</label>
+                <div class="tos-box" id="tosBox">
+                    <strong>Garexcell Terms of Service</strong><br><br>
+                    By creating an account, you agree to our Terms of Service and Privacy Policy. Garexcell processes your data to provide AI and Backend-as-a-Service infrastructure. <br><br>
+                    Data is encrypted at rest and in transit. You agree not to misuse our APIs or reverse-engineer our proprietary Machine Learning models.<br><br>
+                    <em>Please scroll to the bottom of this agreement to enable the checkbox.</em><br><br>
+                    End of terms.
+                </div>
+                <div class="tos-container">
+                    <input type="checkbox" id="tosCheck" disabled onchange="checkTos()">
+                    <label for="tosCheck">I have read and agree to the Terms of Service.</label>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="btnContinue" disabled onclick="createAccount()">Create Account</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+        // Your exact web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBm9TTk3n0GnReoojNTwvmjFkcRvLLX-EY",
+            authDomain: "garexcell-jm.firebaseapp.com",
+            projectId: "garexcell-jm",
+            storageBucket: "garexcell-jm.firebasestorage.app",
+            messagingSenderId: "535515275879",
+            appId: "1:535515275879:web:30564c2e6d2cfcc1efaac2",
+            measurementId: "G-HZDJZJWT3K"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Tab Switching Logic
+        window.switchTab = function(tab) {
+            // Update Tab Styling
+            document.getElementById('tab-login').classList.remove('active');
+            document.getElementById('tab-signup').classList.remove('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+
+            // Update Visible Forms
+            document.getElementById('loginUI').classList.remove('active');
+            document.getElementById('signupUI').classList.remove('active');
+            
+            if (tab === 'login') {
+                document.getElementById('loginUI').classList.add('active');
+            } else {
+                document.getElementById('signupUI').classList.add('active');
+            }
+        };
+
+        // TOS Scroll Logic
+        const tosBox = document.getElementById('tosBox');
+        const tosCheck = document.getElementById('tosCheck');
+        const btnContinue = document.getElementById('btnContinue');
+
+        tosBox.addEventListener('scroll', () => {
+            // Check if user scrolled to the bottom (allow 5px margin of error)
+            if (tosBox.scrollTop + tosBox.clientHeight >= tosBox.scrollHeight - 5) {
+                tosCheck.disabled = false;
+            }
+        });
+
+        window.checkTos = function() { 
+            btnContinue.disabled = !tosCheck.checked; 
+        };
+
+        // Firebase Auth & Firestore Creation
+        window.createAccount = async function() {
+            const email = document.getElementById('suEmail').value;
+            const pass = document.getElementById('suPass').value;
+            const name = document.getElementById('suName').value;
+            const dob = document.getElementById('suDob').value;
+            
+            if (!email || !pass || !name) {
+                alert("Please fill out all required fields.");
+                return;
+            }
+
+            btnContinue.innerText = "Creating account...";
+            btnContinue.disabled = true;
+
+            try {
+                // 1. Create Auth User
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                const uid = userCredential.user.uid;
+                const generatedAccountId = 'GX-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+                // 2. Write to UserInfo collection
+                await setDoc(doc(db, "UserInfo", uid), {
+                    email_address: email, 
+                    fullname: name, 
+                    dob: dob,
+                    CreatedAt: serverTimestamp(), 
+                    AccountId: generatedAccountId, 
+                    uid: uid, 
+                    IsTermsAgreed: true
+                });
+
+                // 3. Write to LinkedServices collection
+                await setDoc(doc(db, "LinkedServices", uid), {
+                    email_address: email, 
+                    uid: uid, 
+                    CreatedAt: serverTimestamp(), 
+                    AppId: "Garexcell_Core"
+                });
+
+                // Set local storage mapping for the account dashboard
+                localStorage.setItem('gx_user', JSON.stringify({ email: email, name: name, uid: uid }));
+                window.location.href = 'account.html';
+                
+            } catch (error) {
+                alert("Error creating account: " + error.message);
+                btnContinue.innerText = "Create Account";
+                btnContinue.disabled = false;
+            }
+        };
+
+        // Firebase Login
+        window.login = async function() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            
+            if (!email || !pass) {
+                alert("Please enter email and password.");
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const uid = userCredential.user.uid;
+                
+                // Fetch user data from Firestore to get name
+                const userDoc = await getDoc(doc(db, "UserInfo", uid));
+                let fullName = userDoc.exists() ? userDoc.data().fullname : "User";
+
+                // Set local storage mapping for the account dashboard
+                localStorage.setItem('gx_user', JSON.stringify({ email: email, name: fullName, uid: uid }));
+                window.location.href = 'account.html';
+                
+            } catch (error) {
+                alert("Login failed: " + error.message);
+            }
+        };
+    </script>
+</body>
+</html>
